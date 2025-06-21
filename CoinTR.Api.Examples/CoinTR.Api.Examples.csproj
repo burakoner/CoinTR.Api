@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>net9.0</TargetFramework>
+	<LangVersion>latest</LangVersion>
+	<OutputType>Exe</OutputType>
+	<Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CoinTR.Api\CoinTR.Api.csproj" />
+  </ItemGroup>
+
+</Project>
