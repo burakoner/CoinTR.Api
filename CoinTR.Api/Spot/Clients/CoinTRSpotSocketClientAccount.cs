@@ -1,11 +1,11 @@
 ﻿namespace CoinTR.Api.Spot;
 
-public partial class CoinTRSpotSocketClient
+internal partial class CoinTRSpotSocketClient
 {
-    public Task<CallResult<WebSocketUpdateSubscription>> SubscribeToOrderUpdatesAsync(string symbol, Action<WebSocketDataEvent<CoinTRSpotStreamOrder>> onMessage, CancellationToken ct = default)
-        => SubscribeToOrderUpdatesAsync([symbol], onMessage, ct);
+    public Task<CallResult<WebSocketUpdateSubscription>> SubscribeToOrdersAsync(string symbol, Action<WebSocketDataEvent<CoinTRSpotStreamOrder>> onMessage, CancellationToken ct = default)
+        => SubscribeToOrdersAsync([symbol], onMessage, ct);
 
-    public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToOrderUpdatesAsync(IEnumerable<string> symbols, Action<WebSocketDataEvent<CoinTRSpotStreamOrder>> onMessage, CancellationToken ct = default)
+    public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToOrdersAsync(IEnumerable<string> symbols, Action<WebSocketDataEvent<CoinTRSpotStreamOrder>> onMessage, CancellationToken ct = default)
     {
         var handler = new Action<WebSocketDataEvent<CoinTRSocketResponse<List<CoinTRSpotStreamOrder>>>>(data =>
         {
@@ -25,7 +25,7 @@ public partial class CoinTRSpotSocketClient
         return await SubscribeAsync(topics, true, handler, ct).ConfigureAwait(false);
     }
 
-    public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToBalanceUpdatesAsync(Action<WebSocketDataEvent<CoinTRSpotStreamBalance>> onMessage, CancellationToken ct = default)
+    public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToBalancesAsync(Action<WebSocketDataEvent<CoinTRSpotStreamBalance>> onMessage, CancellationToken ct = default)
     {
         var handler = new Action<WebSocketDataEvent<CoinTRSocketResponse<List<CoinTRSpotStreamBalance>>>>(data =>
         {

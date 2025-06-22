@@ -1,6 +1,6 @@
 ﻿namespace CoinTR.Api.Spot;
 
-public partial class CoinTRSpotRestClient(CoinTRRestApiClient root) : ICoinTRSpotRestClient
+internal partial class CoinTRSpotRestClient(CoinTRRestApiClient root) : ICoinTRSpotRestClient
 {
     // Api
     private const string v2 = "2";

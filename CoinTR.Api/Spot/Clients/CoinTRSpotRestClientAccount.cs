@@ -1,6 +1,6 @@
 ﻿namespace CoinTR.Api.Spot;
 
-public partial class CoinTRSpotRestClient
+internal partial class CoinTRSpotRestClient
 {
     public Task<RestCallResult<CoinTRSpotAccount>> GetAccountAsync(CancellationToken ct = default)
     {

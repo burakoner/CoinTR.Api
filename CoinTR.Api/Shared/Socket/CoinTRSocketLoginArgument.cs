@@ -6,7 +6,7 @@ internal class CoinTRSocketLoginArgument
     public string ApiKey { get; set; } = "";
 
     [JsonProperty("passphrase")]
-    public string PassPhrase { get; set; } = "";
+    public string Passphrase { get; set; } = "";
 
     [JsonProperty("timestamp")]
     public string Timestamp { get; set; } = "";

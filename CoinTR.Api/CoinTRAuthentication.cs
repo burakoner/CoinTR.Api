@@ -68,8 +68,11 @@ internal class CoinTRAuthentication(CoinTRApiCredentials credentials) : Authenti
         headers.Add("locale", "en-US");
     }
 
-    public Dictionary<string, object> AuthenticateSocketParameters(Dictionary<string, object> providedParameters, long timestamp)
+    public string AuthenticateSocketApi(long timestamp)
     {
-        throw new NotImplementedException("Socket authentication is not implemented for CoinTR API.");
+        var signbody = timestamp + "GET" + "/user/verify";
+        var signature = SignHMACSHA256(signbody, SignatureOutputType.Base64);
+
+        return signature;
     }
 }

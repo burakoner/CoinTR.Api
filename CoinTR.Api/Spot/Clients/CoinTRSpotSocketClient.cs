@@ -1,6 +1,6 @@
 ﻿namespace CoinTR.Api.Spot;
 
-public partial class CoinTRSpotSocketClient : WebSocketApiClient, ICoinTRSpotSocketClient
+internal partial class CoinTRSpotSocketClient : WebSocketApiClient, ICoinTRSpotSocketClient
 {
     // Internal
     internal ILogger Logger { get => _logger; }
@@ -107,9 +107,75 @@ public partial class CoinTRSpotSocketClient : WebSocketApiClient, ICoinTRSpotSoc
 
     protected override async Task<CallResult<bool>> AuthenticateAsync(WebSocketConnection connection)
     {
-        await Task.CompletedTask;
-        return new CallResult<bool>(true);
-        throw new NotImplementedException();
+        // Check Point
+        //if (connection.Authenticated)
+        //    return new CallResult<bool>(true, null);
+
+        // Check Point
+        var credentials = AuthenticationProvider.Credentials;
+        if (credentials is null || credentials.Key is null || credentials.Secret is null || ((CoinTRApiCredentials)credentials).PassPhrase is null)
+            return new CallResult<bool>(new NoApiCredentialsError());
+
+        // Get Credentials
+        var key = credentials.Key.GetString();
+        var secret = credentials.Secret.GetString();
+        var passphrase = ((CoinTRApiCredentials)credentials).PassPhrase.GetString();
+
+        // Check Point
+        if (string.IsNullOrEmpty(key) || string.IsNullOrEmpty(secret) || string.IsNullOrEmpty(passphrase))
+            return new CallResult<bool>(new NoApiCredentialsError());
+
+        // Timestamp
+        //var timestamp = (DateTime.UtcNow.ToUnixTimeMilliSeconds() / 1000.0m).ToString(OkxConstants.OkxCultureInfo);
+        var timestamp = DateTime.UtcNow.Add(GetTimeOffset()).ConvertToSeconds();
+
+        // Signature
+        var signtext = timestamp + "GET" + "/users/self/verify";
+        var hmacEncryptor = new HMACSHA256(Encoding.ASCII.GetBytes(secret));
+        var signature = ((CoinTRAuthentication)AuthenticationProvider).AuthenticateSocketApi(timestamp);
+        var request = new CoinTRSocketLoginRequest
+        {
+            Operation = "login",
+            Arguments = [new CoinTRSocketLoginArgument
+            {
+                ApiKey = key,
+                Passphrase = passphrase,
+                Timestamp = timestamp.ToString(),
+                Signature = signature,
+            }]
+        };
+
+        // Try to Login
+        var result = new CallResult<bool>(new ServerError("No response from server"));
+        await connection.SendAndWaitAsync(request, TimeSpan.FromSeconds(10), data =>
+        {
+            if (data == null) return false;
+            if (data["event"] == null) return false;
+            var evt = data["event"]!.Value<string>();
+            if (string.IsNullOrEmpty(evt)) return false;
+
+            if (evt == "error")
+            {
+                var code = data["code"] != null ? data["code"]!.Value<int>() : -1;
+                var error = data["msg"] != null ? data["msg"]!.Value<string>() : "Unknown Error!..";
+                Logger.Log(LogLevel.Warning, $"Authorization failed. [{code}] {error}");
+                result = new CallResult<bool>(new ServerError(code, error!));
+                return true;
+            }
+            else if (evt == "login")
+            {
+                var code = data["code"] != null ? data["code"]!.Value<int>() : -1;
+                Logger.Log(LogLevel.Debug, "Authorization completed");
+                result = new CallResult<bool>(code == 0);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        });
+
+        return result;
     }
 
     protected override async Task<bool> UnsubscribeAsync(WebSocketConnection connection, WebSocketSubscription subscription)

@@ -1,6 +1,6 @@
 ﻿namespace CoinTR.Api.Spot;
 
-public partial class CoinTRSpotSocketClient
+internal partial class CoinTRSpotSocketClient
 {
     public Task<CallResult<WebSocketUpdateSubscription>> SubscribeToTickersAsync(string symbol, Action<WebSocketDataEvent<CoinTRSpotStreamTicker>> onMessage, CancellationToken ct = default)
         => SubscribeToTickersAsync([symbol], onMessage, ct);

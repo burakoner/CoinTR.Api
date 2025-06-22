@@ -1,6 +1,6 @@
 ﻿namespace CoinTR.Api.Spot;
 
-public partial class CoinTRSpotRestClient
+internal partial class CoinTRSpotRestClient
 {
     public Task<RestCallResult<CoinTRSpotOrderId>> PlaceOrderAsync(
         string symbol,
