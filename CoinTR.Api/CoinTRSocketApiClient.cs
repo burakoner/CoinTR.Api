@@ -3,7 +3,7 @@
 namespace CoinTR.Api;
 
 /// <summary>
-/// Binance WebSocket API Client
+/// CoinTR WebSocket API Client
 /// </summary>
 public class CoinTRSocketApiClient
 {
@@ -14,12 +14,12 @@ public class CoinTRSocketApiClient
     internal CoinTRRestApiClient RestApiClient { get; }
 
     /// <summary>
-    /// Binance Spot WebSocket API Client
+    /// CoinTR Spot WebSocket API Client
     /// </summary>
     public ICoinTRSpotSocketClient Spot { get; }
 
     /// <summary>
-    /// Binance WebSocket API Client Constructor
+    /// CoinTR WebSocket API Client Constructor
     /// </summary>
     public CoinTRSocketApiClient() : this(null, new())
     {
@@ -34,7 +34,7 @@ public class CoinTRSocketApiClient
     }
 
     /// <summary>
-    /// Binance WebSocket API Client Constructor
+    /// CoinTR WebSocket API Client Constructor
     /// </summary>
     /// <param name="options"></param>
     public CoinTRSocketApiClient(CoinTRSocketApiClientOptions options) : this(null, options)
@@ -42,7 +42,7 @@ public class CoinTRSocketApiClient
     }
 
     /// <summary>
-    /// Binance WebSocket API Client Constructor
+    /// CoinTR WebSocket API Client Constructor
     /// </summary>
     /// <param name="logger">Logger</param>
     /// <param name="options">Web Socket API Options</param>

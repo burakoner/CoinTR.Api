@@ -1,15 +1,15 @@
 ﻿namespace CoinTR.Api.Shared;
 
 /// <summary>
-/// Binance rate limit error
+/// CoinTR rate limit error
 /// </summary>
-public class BinanceRateLimitError : ServerRateLimitError
+public class CoinTRRateLimitError : ServerRateLimitError
 {
     /// <summary>
     /// ctor
     /// </summary>
     /// <param name="message"></param>
-    public BinanceRateLimitError(string message) : base(message)
+    public CoinTRRateLimitError(string message) : base(message)
     {
     }
 
@@ -19,7 +19,7 @@ public class BinanceRateLimitError : ServerRateLimitError
     /// <param name="code"></param>
     /// <param name="message"></param>
     /// <param name="data"></param>
-    public BinanceRateLimitError(int? code, string message, object? data) : base(code, message, data)
+    public CoinTRRateLimitError(int? code, string message, object? data) : base(code, message, data)
     {
     }
 }

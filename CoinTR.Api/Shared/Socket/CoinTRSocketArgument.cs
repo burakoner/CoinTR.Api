@@ -2,8 +2,11 @@
 
 internal class CoinTRSocketArgument
 {
-    [JsonProperty("instId")]
-    public string InstrumentId { get; set; } = string.Empty;
+    [JsonProperty("coin", NullValueHandling = NullValueHandling.Ignore)]
+    public string? Asset { get; set; }
+
+    [JsonProperty("instId", NullValueHandling = NullValueHandling.Ignore)]
+    public string? InstrumentId { get; set; }
 
     [JsonProperty("instType")]
     public string InstrumentType { get; set; } = string.Empty;

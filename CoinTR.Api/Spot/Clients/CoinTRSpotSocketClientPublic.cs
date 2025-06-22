@@ -7,7 +7,6 @@ public partial class CoinTRSpotSocketClient
 
     public Task<CallResult<WebSocketUpdateSubscription>> SubscribeToTickersAsync(IEnumerable<string> symbols, Action<WebSocketDataEvent<CoinTRSpotStreamTicker>> onMessage, CancellationToken ct = default)
     {
-        symbols.ValidateNotNull(nameof(symbols));
         var handler = new Action<WebSocketDataEvent<CoinTRSocketResponse<List<CoinTRSpotStreamTicker>>>>(data =>
         {
             foreach (var item in data.Data.Data)
@@ -30,7 +29,6 @@ public partial class CoinTRSpotSocketClient
 
     public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToOrderBooksAsync(IEnumerable<string> symbols, int levels, Action<WebSocketDataEvent<CoinTRSpotOrderBook>> onMessage, CancellationToken ct = default)
     {
-        symbols.ValidateNotNull(nameof(symbols));
         levels.ValidateIntValues(nameof(levels), 1, 5, 15);
 
         var handler = new Action<WebSocketDataEvent<CoinTRSocketResponse<List<CoinTRSpotOrderBook>>>>(data =>

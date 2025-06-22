@@ -26,10 +26,10 @@ public record CoinTRSpotStreamOrderBook
     /// <summary>
     /// The list of bids
     /// </summary>
-    public List<BinanceSpotOrderBookEntry> Bids { get; set; } = [];
+    public List<CoinTRSpotOrderBookEntry> Bids { get; set; } = [];
 
     /// <summary>
     /// The list of asks
     /// </summary>
-    public List<BinanceSpotOrderBookEntry> Asks { get; set; } = [];
+    public List<CoinTRSpotOrderBookEntry> Asks { get; set; } = [];
 }

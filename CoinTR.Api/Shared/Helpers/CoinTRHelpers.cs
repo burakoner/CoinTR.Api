@@ -1,7 +1,7 @@
 ﻿namespace CoinTR.Api.Shared;
 
 /// <summary>
-/// Helper methods for the Binance API
+/// Helper methods for the CoinTR API
 /// </summary>
 public static class CoinTRHelpers
 {

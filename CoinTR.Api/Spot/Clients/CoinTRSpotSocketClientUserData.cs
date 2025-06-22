@@ -2,130 +2,45 @@
 
 public partial class CoinTRSpotSocketClient
 {
-    /*
-    public Task<CallResult<WebSocketUpdateSubscription>> SubscribeToUserDataStreamAsync(
-        string listenKey,
-        Action<WebSocketDataEvent<BinanceSpotStreamOrderUpdate>>? onOrderUpdated = null,
-        Action<WebSocketDataEvent<BinanceSpotStreamOrderListUpdate>>? onOrderListUpdated = null,
-        Action<WebSocketDataEvent<BinanceSpotStreamPositionsUpdate>>? onAccountUpdated = null,
-        Action<WebSocketDataEvent<BinanceSpotStreamBalanceUpdate>>? onBalanceUpdated = null,
-        Action<WebSocketDataEvent<BinanceSpotStreamBalanceUpdate>>? onBalanceLockUpdated = null,
-        Action<WebSocketDataEvent<BinanceSpotStreamUpdate>>? onUserDataStreamTerminated = null,
-        Action<WebSocketDataEvent<BinanceSpotStreamUpdate>>? onListenKeyExpired = null,
-        CancellationToken ct = default)
+    public Task<CallResult<WebSocketUpdateSubscription>> SubscribeToOrderUpdatesAsync(string symbol, Action<WebSocketDataEvent<CoinTRSpotStreamOrder>> onMessage, CancellationToken ct = default)
+        => SubscribeToOrderUpdatesAsync([symbol], onMessage, ct);
+
+    public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToOrderUpdatesAsync(IEnumerable<string> symbols, Action<WebSocketDataEvent<CoinTRSpotStreamOrder>> onMessage, CancellationToken ct = default)
     {
-        listenKey.ValidateNotNull(nameof(listenKey));
-
-        var handler = new Action<WebSocketDataEvent<string>>(data =>
+        var handler = new Action<WebSocketDataEvent<CoinTRSocketResponse<List<CoinTRSpotStreamOrder>>>>(data =>
         {
-            var combinedToken = JToken.Parse(data.Data);
-            var token = combinedToken["data"];
-            if (token == null) return;
-
-            var evnt = token["e"]?.ToString();
-            if (evnt == null) return;
-
-            switch (evnt)
+            foreach (var item in data.Data.Data)
             {
-                // Account Update
-                case "outboundAccountPosition":
-                    {
-                        var result = Deserialize<BinanceSpotStreamPositionsUpdate>(token);
-                        if (result)
-                        {
-                            result.Data.ListenKey = combinedToken["stream"]!.Value<string>()!;
-                            onAccountUpdated?.Invoke(data.As(result.Data));
-                        }
-                        else Logger.Log(LogLevel.Warning, "Couldn't deserialize data received from account position stream: " + result.Error);
-                        break;
-                    }
-
-                // Balance Update
-                case "balanceUpdate":
-                    {
-                        var result = Deserialize<BinanceSpotStreamBalanceUpdate>(token);
-                        if (result)
-                        {
-                            result.Data.ListenKey = combinedToken["stream"]!.Value<string>()!;
-                            onBalanceUpdated?.Invoke(data.As(result.Data, result.Data.Asset));
-                        }
-                        else Logger.Log(LogLevel.Warning, "Couldn't deserialize data received from account position stream: " + result.Error);
-                        break;
-                    }
-
-                // Balance Lock Update
-                case "externalLockUpdate":
-                    {
-                        var result = Deserialize<BinanceSpotStreamBalanceUpdate>(token);
-                        if (result)
-                        {
-                            result.Data.ListenKey = combinedToken["stream"]!.Value<string>()!;
-                            onBalanceLockUpdated?.Invoke(data.As(result.Data, result.Data.Asset));
-                        }
-                        else Logger.Log(LogLevel.Warning, "Couldn't deserialize data received from account position stream: " + result.Error);
-                        break;
-                    }
-
-                // Order Update
-                case "executionReport":
-                    {
-                        var result = Deserialize<BinanceSpotStreamOrderUpdate>(token);
-                        if (result)
-                        {
-                            result.Data.ListenKey = combinedToken["stream"]!.Value<string>()!;
-                            onOrderUpdated?.Invoke(data.As(result.Data, result.Data.Id.ToString()));
-                        }
-                        else Logger.Log(LogLevel.Warning, "Couldn't deserialize data received from order stream: " + result.Error);
-                        break;
-                    }
-
-                // Order List Update
-                case "listStatus":
-                    {
-                        var result = Deserialize<BinanceSpotStreamOrderListUpdate>(token);
-                        if (result)
-                        {
-                            result.Data.ListenKey = combinedToken["stream"]!.Value<string>()!;
-                            onOrderListUpdated?.Invoke(data.As(result.Data, result.Data.Id.ToString()));
-                        }
-                        else Logger.Log(LogLevel.Warning, "Couldn't deserialize data received from oco order stream: " + result.Error);
-                        break;
-                    }
-
-                // Listen Key Expired
-                case "listenKeyExpired":
-                    {
-                        var result = Deserialize<BinanceSpotStreamUpdate>(token);
-                        if (result)
-                        {
-                            result.Data.ListenKey = combinedToken["stream"]!.Value<string>()!;
-                            onListenKeyExpired?.Invoke(data.As(result.Data));
-                        }
-                        else Logger.Log(LogLevel.Warning, "Couldn't deserialize data received from oco order stream: " + result.Error);
-                        break;
-                    }
-
-                // Event Stream Terminated
-                case "eventStreamTerminated":
-                    {
-                        var result = Deserialize<BinanceSpotStreamUpdate>(token);
-                        if (result)
-                        {
-                            result.Data.ListenKey = combinedToken["stream"]!.Value<string>()!;
-                            onUserDataStreamTerminated?.Invoke(data.As(result.Data));
-                        }
-                        else Logger.Log(LogLevel.Warning, "Couldn't deserialize data received from oco order stream: " + result.Error);
-                        break;
-                    }
-
-                // Default
-                default:
-                    Logger.Log(LogLevel.Warning, $"Received unknown user data event {evnt}: " + data);
-                    break;
+                item.Symbol = data.Data.Argument.InstrumentId!;
+                onMessage(data.As(item, item.Symbol));
             }
         });
 
-        return SubscribeAsync([listenKey], false, handler, ct);
+        var topics = symbols.Select(a => new CoinTRSocketArgument
+        {
+            InstrumentId = a,
+            InstrumentType = "SPOT",
+            Channel = $"orders"
+        }).ToArray();
+        return await SubscribeAsync(topics, true, handler, ct).ConfigureAwait(false);
     }
-    */
+
+    public async Task<CallResult<WebSocketUpdateSubscription>> SubscribeToBalanceUpdatesAsync(Action<WebSocketDataEvent<CoinTRSpotStreamBalance>> onMessage, CancellationToken ct = default)
+    {
+        var handler = new Action<WebSocketDataEvent<CoinTRSocketResponse<List<CoinTRSpotStreamBalance>>>>(data =>
+        {
+            foreach (var item in data.Data.Data)
+            {
+                onMessage(data.As(item));
+            }
+        });
+
+        var topic = new CoinTRSocketArgument
+        {
+            InstrumentType = "SPOT",
+            Channel = $"account",
+            Asset = "default",
+        };
+        return await SubscribeAsync([topic], true, handler, ct).ConfigureAwait(false);
+    }
 }

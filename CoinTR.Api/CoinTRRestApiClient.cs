@@ -3,7 +3,7 @@
 namespace CoinTR.Api;
 
 /// <summary>
-/// Binance Rest API Client
+/// CoinTR Rest API Client
 /// </summary>
 public sealed class CoinTRRestApiClient : RestApiClient
 {
@@ -13,7 +13,7 @@ public sealed class CoinTRRestApiClient : RestApiClient
     internal CoinTRRestApiClientOptions ApiOptions => (CoinTRRestApiClientOptions)ClientOptions;
 
     /// <summary>
-    /// Binance Spot Rest API Client
+    /// CoinTR Spot Rest API Client
     /// </summary>
     public ICoinTRSpotRestClient Spot { get; }
 
@@ -35,7 +35,7 @@ public sealed class CoinTRRestApiClient : RestApiClient
     /// <summary>
     /// Constructor with options
     /// </summary>
-    /// <param name="options">Binance Rest API Client Options</param>
+    /// <param name="options">CoinTR Rest API Client Options</param>
     public CoinTRRestApiClient(CoinTRRestApiClientOptions options) : this(null, options)
     {
     }
@@ -44,7 +44,7 @@ public sealed class CoinTRRestApiClient : RestApiClient
     /// Constructor with logger and options
     /// </summary>
     /// <param name="logger">Logger</param>
-    /// <param name="options">Binance Rest API Client Options</param>
+    /// <param name="options">CoinTR Rest API Client Options</param>
     public CoinTRRestApiClient(ILogger? logger, CoinTRRestApiClientOptions options) : base(logger ?? BaseClient.LoggerFactory.CreateLogger(typeof(CoinTRRestApiClient)), options)
     {
         RequestBodyFormat = RestRequestBodyFormat.Json;

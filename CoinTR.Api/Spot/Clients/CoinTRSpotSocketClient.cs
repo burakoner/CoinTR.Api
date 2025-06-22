@@ -1,10 +1,14 @@
-﻿namespace CoinTR.Api.Spot;
+﻿using ApiSharp.Interfaces;
+using ApiSharp.Models;
+using ApiSharp.Rest;
+
+namespace CoinTR.Api.Spot;
 
 public partial class CoinTRSpotSocketClient : WebSocketApiClient, ICoinTRSpotSocketClient
 {
     // Internal
     internal ILogger Logger { get => _logger; }
-    internal TimeSyncState TimeSyncState { get; } = new("Binance Spot WS");
+    internal TimeSyncState TimeSyncState { get; } = new("CoinTR Spot WS");
     internal CallResult<T> Deserializer<T>(string data, JsonSerializer? serializer = null, int? requestId = null) => Deserialize<T>(data, serializer, requestId);
     internal CallResult<T> Deserializer<T>(JToken obj, JsonSerializer? serializer = null, int? requestId = null) => Deserialize<T>(obj, serializer, requestId);
 
@@ -36,6 +40,7 @@ public partial class CoinTRSpotSocketClient : WebSocketApiClient, ICoinTRSpotSoc
 
     protected override bool HandleQueryResponse<T>(WebSocketConnection connection, object request, JToken data, out CallResult<T>? callResult)
     {
+        /*
         callResult = null;
 
         if (data.Type != JTokenType.Object)
@@ -58,7 +63,7 @@ public partial class CoinTRSpotSocketClient : WebSocketApiClient, ICoinTRSpotSoc
                 if (status == 418 || status == 429)
                 {
                     // Rate limit error 
-                    return new CallResult<T>(new BinanceRateLimitError(errorCode, errorMessage, null)
+                    return new CallResult<T>(new CoinTRRateLimitError(errorCode, errorMessage, null)
                     {
                         // RetryAfter = data["error"]?["data"].Data.Error.Data!.RetryAfter
                     }, SocketOptions.RawResponse ? data.ToString() : null);
@@ -85,6 +90,7 @@ public partial class CoinTRSpotSocketClient : WebSocketApiClient, ICoinTRSpotSoc
             callResult = new CallResult<T>(desResult.Data, SocketOptions.RawResponse ? data.ToString() : null);
             return true;
         }
+        */
 
         throw new NotImplementedException();
     }
@@ -164,35 +170,49 @@ public partial class CoinTRSpotSocketClient : WebSocketApiClient, ICoinTRSpotSoc
 
     protected override async Task<bool> UnsubscribeAsync(WebSocketConnection connection, WebSocketSubscription subscription)
     {
-        var topics = ((BinanceSocketRequest)subscription.Request!).Params;
-        var unsub = new BinanceSocketRequest { Method = "UNSUBSCRIBE", Params = topics, Id = NextId() };
-        var result = false;
+        var topics = ((CoinTRSocketRequest)subscription.Request!).Arguments;
+        var request = new CoinTRSocketRequest { Operation = "unsubscribe", Arguments = topics };
 
         if (!connection.Connected)
             return true;
 
-        await connection.SendAndWaitAsync(unsub, ClientOptions.ResponseTimeout, data =>
+        await connection.SendAndWaitAsync(request, ClientOptions.ResponseTimeout, message =>
         {
-            if (data.Type != JTokenType.Object)
+            if (message.Type != JTokenType.Object)
                 return false;
 
-            var id = data["id"];
-            if (id == null)
-                return false;
+            if (message["event"] == null) return false;
+            if (message["event"]!.Type != JTokenType.String) return false;
+            var evt = message["event"]!.Value<string>();
+            if (evt != "unsubscribe" && evt != "error") return false;
 
-            if ((int)id != unsub.Id)
-                return false;
+            if (message["arg"] == null) return false;
+            if (message["arg"]!.Type != JTokenType.Object) return false;
+            var arg = Deserialize<CoinTRSocketArgument>(message["arg"]!);
+            if (arg == null) return false;
+            if (arg.Data == null) return false;
+            if (arg.Success == false) return false;
 
-            var result = data["result"];
-            if (result?.Type == JTokenType.Null)
+            var argument = (request).Arguments.FirstOrDefault(x => x.InstrumentId == arg.Data.InstrumentId && x.InstrumentType == arg.Data.InstrumentType && x.Channel == arg.Data.Channel);
+            if (argument == null) return false;
+
+            if (evt == "subscribe")
             {
-                result = true;
+                Logger.Log(LogLevel.Trace, $"Socket {connection.Id} Subscription finished");
+                return true;
+            }
+
+            if (evt == "error")
+            {
+                var code = message["code"] != null ? message["code"]!.Value<int>() : -1;
+                var error = message["msg"] != null ? message["msg"]!.Value<string>() : "Unknown Error!..";
                 return true;
             }
 
             return true;
         }).ConfigureAwait(false);
-        return result;
+
+        return true;
     }
     #endregion
 
@@ -245,19 +265,9 @@ public partial class CoinTRSpotSocketClient : WebSocketApiClient, ICoinTRSpotSoc
         await this.UnsubscribeAsync(wsc, wss).ConfigureAwait(false);
 
         // Force Unsubscribe
-        if (force)
-        {
-            await base.UnsubscribeAsync(subscription).ConfigureAwait(false);
-        }
+        if (force) await base.UnsubscribeAsync(subscription).ConfigureAwait(false);
     }
 
-    public Task UnsubscribeAsync(int subscriptionId, CancellationToken ct = default)
-    {
-        return base.UnsubscribeAsync(subscriptionId);
-    }
-
-    public Task UnsubscribeAllAsync(CancellationToken ct = default)
-    {
-        return base.UnsubscribeAllAsync();
-    }
+    public Task UnsubscribeAsync(int subscriptionId, CancellationToken ct = default) => base.UnsubscribeAsync(subscriptionId);
+    public Task UnsubscribeAllAsync(CancellationToken ct = default) => base.UnsubscribeAllAsync();
 }

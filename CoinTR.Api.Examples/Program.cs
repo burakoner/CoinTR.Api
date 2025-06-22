@@ -19,7 +19,8 @@ internal class Program
         {
             Console.WriteLine($"{data.Data.Symbol} O:{data.Data.OpenPrice} H:{data.Data.HighPrice} L:{data.Data.LowPrice} C:{data.Data.LastPrice}");
         });
-
+        Console.ReadKey(true);
+        await ws.Spot.UnsubscribeAsync(sub02.Data);
 
         Console.WriteLine("CoinTR API Console App");
         Console.WriteLine("===================================");

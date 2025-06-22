@@ -1,7 +1,7 @@
 ﻿namespace CoinTR.Api;
 
 /// <summary>
-/// Binance WebSocket API Client Options
+/// CoinTR WebSocket API Client Options
 /// </summary>
 public class CoinTRSocketApiClientOptions : WebSocketApiClientOptions
 {
