@@ -35,7 +35,7 @@ public partial class CoinTRSpotRestClient
         return RequestAsync<List<CoinTRSpotTicker>>(GetUrl(api, v2, "spot/market/tickers"), HttpMethod.Get, ct, false, queryParameters: parameters);
     }
 
-    public Task<RestCallResult<CoinTRSpotOrderBook>> GetOrderBookAsync(string symbol, string? type = null, int? limit = null, CancellationToken ct = default)
+    public async Task<RestCallResult<CoinTRSpotOrderBook>> GetOrderBookAsync(string symbol, string? type = null, int? limit = null, CancellationToken ct = default)
     {
         limit?.ValidateIntBetween(nameof(limit), 1, 150);
 
@@ -45,6 +45,10 @@ public partial class CoinTRSpotRestClient
         };
         parameters.AddOptionalString("limit", limit);
 
-        return RequestAsync<CoinTRSpotOrderBook>(GetUrl(api, v2, "spot/market/orderbook"), HttpMethod.Get, ct, false, queryParameters: parameters);
+        var result = await RequestAsync<CoinTRSpotOrderBook>(GetUrl(api, v2, "spot/market/orderbook"), HttpMethod.Get, ct, false, queryParameters: parameters);
+        if(!result.Success||result.Data==null) return result;
+        
+        result.Data.Symbol = symbol;
+        return result;
     }
 }
