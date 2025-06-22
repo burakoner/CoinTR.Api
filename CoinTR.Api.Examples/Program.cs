@@ -9,6 +9,18 @@ internal class Program
 {
     static async Task Main(string[] args)
     {
+        // WebSocket API Client
+        var ws = new CoinTRSocketApiClient();
+        //ws.SetApiCredentials("XXXXXXXX-API-KEY-XXXXXXXX", "XXXXXXXX-API-SECRET-XXXXXXXX", "XXXXXXXX-API-PASSPHRASE-XXXXXXXX");
+
+        var spot = (CoinTRSpotSocketClient)ws.Spot;
+
+        var sub02 = await spot.SubscribeToTickersAsync(["ETHUSDT", "XRPUSDT"], (data) =>
+        {
+            Console.WriteLine($"{data.Data.Symbol} O:{data.Data.OpenPrice} H:{data.Data.HighPrice} L:{data.Data.LowPrice} C:{data.Data.LastPrice}");
+        });
+
+
         Console.WriteLine("CoinTR API Console App");
         Console.WriteLine("===================================");
         Console.WriteLine("This is a sample console application to demonstrate the usage of the CoinTR API.");
@@ -174,7 +186,7 @@ internal class Program
     {
         // WebSocket API Client
         var ws = new CoinTRSocketApiClient();
-        ws.SetApiCredentials("XXXXXXXX-API-KEY-XXXXXXXX", "XXXXXXXX-API-SECRET-XXXXXXXX");
+        ws.SetApiCredentials("XXXXXXXX-API-KEY-XXXXXXXX", "XXXXXXXX-API-SECRET-XXXXXXXX", "XXXXXXXX-API-PASSPHRASE-XXXXXXXX");
 
         /*
         // Subscription Samples

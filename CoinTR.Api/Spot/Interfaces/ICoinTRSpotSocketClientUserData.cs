@@ -3,6 +3,6 @@
 /// <summary>
 /// Binance CoinTR Account Subscriptions
 /// </summary>
-public interface ICoinTRSpotSocketClientStreamUserDataStream
+public interface ICoinTRSpotSocketClientUserData
 {
 }

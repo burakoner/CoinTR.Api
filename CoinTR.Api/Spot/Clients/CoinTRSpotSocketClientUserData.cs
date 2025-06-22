@@ -1,7 +1,8 @@
 ﻿namespace CoinTR.Api.Spot;
 
-internal partial class CoinTRSpotSocketClient
+public partial class CoinTRSpotSocketClient
 {
+    /*
     public Task<CallResult<WebSocketUpdateSubscription>> SubscribeToUserDataStreamAsync(
         string listenKey,
         Action<WebSocketDataEvent<BinanceSpotStreamOrderUpdate>>? onOrderUpdated = null,
@@ -126,4 +127,5 @@ internal partial class CoinTRSpotSocketClient
 
         return SubscribeAsync([listenKey], false, handler, ct);
     }
+    */
 }

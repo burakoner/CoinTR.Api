@@ -6,5 +6,4 @@
 public interface ICoinTRSpotRestClient : 
     ICoinTRSpotRestClientAccount,
     ICoinTRSpotRestClientPublic,
-    ICoinTRSpotRestClientMarket,
     ICoinTRSpotRestClientTrade;

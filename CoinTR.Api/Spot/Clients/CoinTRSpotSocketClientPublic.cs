@@ -1,7 +1,39 @@
 ﻿namespace CoinTR.Api.Spot;
 
-internal partial class CoinTRSpotSocketClient
+public partial class CoinTRSpotSocketClient
 {
+    public Task<CallResult<WebSocketUpdateSubscription>> SubscribeToTickersAsync(string symbol, Action<WebSocketDataEvent<CoinTRSpotStreamTicker>> onMessage, CancellationToken ct = default)
+        => SubscribeToTickersAsync([symbol], onMessage, ct);
+
+    public Task<CallResult<WebSocketUpdateSubscription>> SubscribeToTickersAsync(IEnumerable<string> symbols, Action<WebSocketDataEvent<CoinTRSpotStreamTicker>> onMessage, CancellationToken ct = default)
+    {
+        symbols.ValidateNotNull(nameof(symbols));
+        var handler = new Action<WebSocketDataEvent<CoinTRSocketResponse<List<CoinTRSpotStreamTicker>>>>(data =>
+        {
+            foreach (var item in data.Data.Data)
+            {
+                onMessage(data.As(item, item.Symbol));
+            }
+        });
+
+        var topics = symbols.Select(a =>
+        new CoinTRSocketArgument
+        {
+            InstrumentId = a,
+            InstrumentType = "SPOT",
+            Channel = "ticker"
+        }).ToArray();
+        return SubscribeAsync(topics, false, handler, ct);
+    }
+
+
+
+
+
+
+
+
+    /*
     public Task<CallResult<WebSocketUpdateSubscription>> SubscribeToAggregatedTradesAsync(string symbol, Action<WebSocketDataEvent<BinanceSpotStreamAggregatedTrade>> onMessage, CancellationToken ct = default)
         => SubscribeToAggregatedTradesAsync([symbol], onMessage, ct);
 
@@ -48,7 +80,7 @@ internal partial class CoinTRSpotSocketClient
             onMessage(data.As(data.Data.Data, data.Data.Data.Symbol));
         });
 
-        var topics = symbols.Select(a => a.ToLower(CoinTRConstants.CI  ) + "@miniTicker").ToArray();
+        var topics = symbols.Select(a => a.ToLower(CoinTRConstants.CI) + "@miniTicker").ToArray();
         return SubscribeAsync(topics, false, handler, ct);
     }
 
@@ -161,4 +193,5 @@ internal partial class CoinTRSpotSocketClient
         var topics = symbols.Select(a => a.ToLower(CoinTRConstants.CI) + "@depth" + (updateInterval.HasValue ? $"@{updateInterval.Value}ms" : "")).ToArray();
         return await SubscribeAsync(topics, false, handler, ct);
     }
+    */
 }

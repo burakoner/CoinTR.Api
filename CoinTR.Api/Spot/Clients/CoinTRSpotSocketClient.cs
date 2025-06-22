@@ -1,6 +1,6 @@
 ﻿namespace CoinTR.Api.Spot;
 
-internal partial class CoinTRSpotSocketClient : WebSocketApiClient, ICoinTRSpotSocketClient
+public partial class CoinTRSpotSocketClient : WebSocketApiClient, ICoinTRSpotSocketClient
 {
     // Internal
     internal ILogger Logger { get => _logger; }
@@ -92,33 +92,40 @@ internal partial class CoinTRSpotSocketClient : WebSocketApiClient, ICoinTRSpotS
     protected override bool HandleSubscriptionResponse(WebSocketConnection connection, WebSocketSubscription subscription, object request, JToken message, out CallResult<object>? callResult)
     {
         callResult = null;
+
         if (message.Type != JTokenType.Object)
             return false;
 
-        var id = message["id"];
-        if (id == null)
-            return false;
+        if (message["event"] == null) return false;
+        if (message["event"]!.Type != JTokenType.String) return false;
+        var evt = message["event"]!.Value<string>();
+        if (evt != "subscribe" && evt != "error") return false;
 
-        var bRequest = (BinanceSocketRequest)request;
-        if ((int)id != bRequest.Id)
-            return false;
+        if (message["arg"] == null) return false;
+        if (message["arg"]!.Type != JTokenType.Object) return false;
+        var arg = Deserialize<CoinTRSocketArgument>(message["arg"]!);
+        if (arg == null) return false;
+        if (arg.Data == null) return false;
+        if (arg.Success == false) return false;
 
-        var result = message["result"];
-        if (result != null && result.Type == JTokenType.Null)
+        var argument = ((CoinTRSocketRequest)request).Arguments.FirstOrDefault(x => x.InstrumentId == arg.Data.InstrumentId && x.InstrumentType == arg.Data.InstrumentType && x.Channel == arg.Data.Channel);
+        if (argument == null) return false;
+
+        if (evt == "subscribe")
         {
             Logger.Log(LogLevel.Trace, $"Socket {connection.Id} Subscription completed");
             callResult = new CallResult<object>(new object());
             return true;
         }
 
-        var error = message["error"];
-        if (error == null)
+        if (evt == "error")
         {
-            callResult = new CallResult<object>(new ServerError("Unknown error: " + message));
+            var code = message["code"] != null ? message["code"]!.Value<int>() : -1;
+            var error = message["msg"] != null ? message["msg"]!.Value<string>() : "Unknown Error!..";
+            callResult = new CallResult<object>(new ServerError(code, error!));
             return true;
         }
 
-        callResult = new CallResult<object>(new ServerError(error["code"]!.Value<int>(), error["msg"]!.ToString()));
         return true;
     }
 
@@ -127,12 +134,20 @@ internal partial class CoinTRSpotSocketClient : WebSocketApiClient, ICoinTRSpotS
         if (message.Type != JTokenType.Object)
             return false;
 
-        var bRequest = (BinanceSocketRequest)request;
-        var stream = message["stream"];
-        if (stream == null)
-            return false;
+        var action = message["action"];
+        if (action == null) return false;
 
-        return bRequest.Params.Contains(stream.ToString());
+        if (message["arg"] == null) return false;
+        if (message["arg"]!.Type != JTokenType.Object) return false;
+        var arg = Deserialize<CoinTRSocketArgument>(message["arg"]!);
+        if (arg == null) return false;
+        if (arg.Data == null) return false;
+        if (arg.Success == false) return false;
+
+        var argument = ((CoinTRSocketRequest)request).Arguments.FirstOrDefault(x => x.InstrumentId == arg.Data.InstrumentId && x.InstrumentType == arg.Data.InstrumentType && x.Channel == arg.Data.Channel);
+        if (argument == null) return false;
+
+        return true;
     }
 
     protected override bool MessageMatchesHandler(WebSocketConnection connection, JToken message, string identifier)
@@ -181,16 +196,15 @@ internal partial class CoinTRSpotSocketClient : WebSocketApiClient, ICoinTRSpotS
     }
     #endregion
 
-    internal Task<CallResult<WebSocketUpdateSubscription>> SubscribeAsync<T>(IEnumerable<string> topics, bool authenticated, Action<WebSocketDataEvent<T>> onData, CancellationToken ct)
+    internal Task<CallResult<WebSocketUpdateSubscription>> SubscribeAsync<T>(IEnumerable<CoinTRSocketArgument> topics, bool authenticated, Action<WebSocketDataEvent<T>> onData, CancellationToken ct)
     {
-        var request = new BinanceSocketRequest
+        var request = new CoinTRSocketRequest
         {
-            Method = "SUBSCRIBE",
-            Params = [.. topics],
-            Id = NextId()
+            Operation = "subscribe",
+            Arguments = [.. topics],
         };
 
-        return SubscribeAsync(CoinTRAddress.Default.SpotSocketApiPublicAddress.AppendPath("stream"), request, "", authenticated, onData, ct);
+        return SubscribeAsync(authenticated ? CoinTRAddress.Default.SpotSocketApiPrivateAddress : CoinTRAddress.Default.SpotSocketApiPublicAddress, request, "", authenticated, onData, ct);
     }
 
     internal async Task<CallResult<bool>> SyncTimeAsync()

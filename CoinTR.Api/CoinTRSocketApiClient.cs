@@ -62,9 +62,10 @@ public class CoinTRSocketApiClient
     /// </summary>
     /// <param name="apikey"></param>
     /// <param name="secret"></param>
-    public void SetApiCredentials(string apikey, string secret)
+    /// <param name="phrase"></param>
+    public void SetApiCredentials(string apikey, string secret, string phrase)
     {
-        ((CoinTRSpotSocketClient)Spot).SetApiCredentials(new ApiCredentials(apikey, secret));
+        ((CoinTRSpotSocketClient)Spot).SetApiCredentials(new CoinTRApiCredentials(apikey, secret, phrase));
     }
 
 }

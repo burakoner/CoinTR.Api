@@ -4,8 +4,8 @@
 /// Interface for the CoinTR Spot Web Socket API Client
 /// </summary>
 public interface ICoinTRSpotSocketClient :
-    ICoinTRSpotSocketClientStreamMarketData,
-    ICoinTRSpotSocketClientStreamUserDataStream
+    ICoinTRSpotSocketClientPublic,
+    ICoinTRSpotSocketClientUserData
 {
     /// <summary>
     /// Unsubscribes from a stream. This will close the socket connection and unsubscribe from the stream.
