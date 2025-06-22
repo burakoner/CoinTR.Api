@@ -223,60 +223,6 @@ internal partial class CoinTRSpotSocketClient : WebSocketApiClient, ICoinTRSpotS
         return new CallResult<bool>(true);
     }
 
-    internal async Task<CallResult<T>> RequestAsync<T>(string url, string method, Dictionary<string, object> parameters, bool authenticated = false, bool sign = false, int weight = 1, CancellationToken ct = default)
-    {
-        if (authenticated)
-        {
-            if (AuthenticationProvider == null)
-                throw new InvalidOperationException("No credentials provided for authenticated endpoint");
-
-            var syncTask = SyncTimeAsync();
-            var timeSyncInfo = GetTimeSyncInfo();
-            if (timeSyncInfo.TimeSyncState.LastSyncTime == default)
-            {
-                // Initially with first request we'll need to wait for the time syncing, if it's not the first request we can just continue
-                var syncTimeResult = await syncTask.ConfigureAwait(false);
-                if (!syncTimeResult)
-                {
-                    //_logger.Log(LogLevel.Debug, $"[{requestId}] Failed to sync time, aborting request: " + syncTimeResult.Error);
-                    //return syncTimeResult.As<IRequest>(default);
-                }
-            }
-
-            var authProvider = (CoinTRAuthentication)AuthenticationProvider;
-            var timestamp = DateTime.UtcNow.Add(GetTimeOffset()).ConvertToMilliseconds();
-            if (sign) parameters = authProvider.AuthenticateSocketParameters(parameters, timestamp);
-            else parameters.Add("apiKey", authProvider.Credentials.Key.GetString());
-        }
-
-        var request = new BinanceSocketQuery
-        {
-            Method = method,
-            Params = parameters,
-            Id = ExchangeHelpers.NextId()
-        };
-
-        var address = url.StartsWith("wss://") ? url : CoinTRAddress.Default.SpotSocketApiPublicAddress.AppendPath(url);
-        var result = await base.QueryAsync<BinanceResultWithRateLimits<T>>(address, request, sign).ConfigureAwait(false);
-        if (!result.Success)
-        {
-            if (result.Error is BinanceRateLimitError rle)
-            {
-                /*
-                if (rle.RetryAfter != null && RateLimiter != null && ClientOptions.RateLimiterEnabled)
-                {
-                    _logger.LogWarning("Ratelimit error from server, pausing requests until {Until}", rle.RetryAfter.Value);
-                    await RateLimiter.SetRetryAfterGuardAsync(rle.RetryAfter.Value).ConfigureAwait(false);
-                }
-                */
-            }
-
-            else return result.AsError<T>(result.Error!);
-        }
-
-        return result.As(result.Data.Result);
-    }
-
     public async Task UnsubscribeAsync(WebSocketUpdateSubscription subscription, bool force = false, CancellationToken ct = default)
     {
         // Soft Unsubscribe

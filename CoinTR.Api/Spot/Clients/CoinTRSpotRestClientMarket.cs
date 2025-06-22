@@ -12,7 +12,6 @@ public partial class CoinTRSpotRestClient
 
     public Task<RestCallResult<CoinTRSpotOrderBook>> GetOrderBookAsync(string symbol, string? type = null, int? limit = null, CancellationToken ct = default)
     {
-        symbol.ValidateBinanceSymbol();
         limit?.ValidateIntBetween(nameof(limit), 1, 150);
 
         var parameters = new ParameterCollection

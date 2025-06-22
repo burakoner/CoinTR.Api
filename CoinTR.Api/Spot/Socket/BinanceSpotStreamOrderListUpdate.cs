@@ -18,18 +18,6 @@ public record BinanceSpotStreamOrderListUpdate: BinanceSocketStreamEvent
     public string ContingencyType { get; set; } = string.Empty;
 
     /// <summary>
-    /// The order list status
-    /// </summary>
-    [JsonProperty("l")]
-    public BinanceListStatusType ListStatusType { get; set; }
-
-    /// <summary>
-    /// The order status
-    /// </summary>
-    [JsonProperty("L")]
-    public BinanceListOrderStatus ListOrderStatus { get; set; }
-
-    /// <summary>
     /// Rejection reason
     /// </summary>
     [JsonProperty("r")]

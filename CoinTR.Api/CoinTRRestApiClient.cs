@@ -99,7 +99,7 @@ public sealed class CoinTRRestApiClient : RestApiClient
         Dictionary<string, object>? queryParameters = null, Dictionary<string, object>? bodyParameters = null, Dictionary<string, string>? headerParameters = null,
         ArraySerialization? serialization = null, JsonSerializer? deserializer = null, bool ignoreRatelimit = false, int requestWeight = 1) where T : class
     {
-        var result = await SendRequestAsync<CoinTRResponse<T>>(uri, method, cancellationToken, signed, queryParameters ?? [], bodyParameters ?? [], headerParameters ?? [], serialization, deserializer, ignoreRatelimit, requestWeight).ConfigureAwait(false);
+        var result = await SendRequestAsync<CoinTRRestResponse<T>>(uri, method, cancellationToken, signed, queryParameters ?? [], bodyParameters ?? [], headerParameters ?? [], serialization, deserializer, ignoreRatelimit, requestWeight).ConfigureAwait(false);
         if (!result && result.Error!.Code == -1021 && ApiOptions.AutoTimestamp)
         {
             Logger.Log(LogLevel.Debug, "Received Invalid Timestamp error, triggering new time sync");

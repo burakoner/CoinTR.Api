@@ -11,9 +11,9 @@ internal class CoinTRAuthentication(CoinTRApiCredentials credentials) : Authenti
         if (!signed) return;
 
         // Check Point
-        if (Credentials is null || 
-            Credentials.Key is null || 
-            Credentials.Secret is null || 
+        if (Credentials is null ||
+            Credentials.Key is null ||
+            Credentials.Secret is null ||
             ((CoinTRApiCredentials)Credentials).PassPhrase is null)
             throw new ArgumentException("No valid API credentials provided. Key/Secret/PassPhrase needed.");
 
@@ -25,12 +25,16 @@ internal class CoinTRAuthentication(CoinTRApiCredentials credentials) : Authenti
         var phrase = ((CoinTRApiCredentials)Credentials).PassPhrase.GetString();
         if (string.IsNullOrEmpty(phrase)) throw new ArgumentException("No valid API credentials provided. Key/Secret/PassPhrase needed.");
 
-        // Set Uri Parameters
-        uri = uri.SetParameters(query, serialization);
-
         // Timestamp
         var timestamp = GetMillisecondTimestamp(apiClient);
         var methodName = method.ToString().ToUpperInvariant();
+
+        // Request Time
+        if (method == HttpMethod.Get && query != null && query.ContainsKey("receiveWindow")) query.Add("requestTime", timestamp);
+        else if (method == HttpMethod.Post && body != null && body.ContainsKey("receiveWindow")) body.Add("requestTime", timestamp);
+
+        // Set Uri Parameters
+        uri = uri.SetParameters(query!, serialization);
 
         // Signature
         var signature = string.Empty;

@@ -4,7 +4,7 @@ public partial class CoinTRSpotRestClient
 {
     public async Task<RestCallResult<DateTime>> GetTimeAsync(CancellationToken ct = default)
     {
-        var result = await RequestAsync<CoinTRServerTime>(GetUrl(api, v2, "public/time"), HttpMethod.Get, ct, ignoreRatelimit: true).ConfigureAwait(false);
+        var result = await RequestAsync<CoinTRSpotServerTime>(GetUrl(api, v2, "public/time"), HttpMethod.Get, ct, ignoreRatelimit: true).ConfigureAwait(false);
 
         return result.Success
             ? result.As(result.Data?.ServerTime ?? default)

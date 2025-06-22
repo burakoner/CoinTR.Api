@@ -2,20 +2,7 @@
 
 public partial class CoinTRSpotRestClient
 {
-    /*
-    public Task<UnifiedResponse<Order>> PlaceOrderAsync(string symbol, OrderSide side, OrderType type, OrderTimeInForce timeInForce, decimal? price = null, decimal? stopPrice = null, decimal? quantity = null, decimal? quoteQuantity = null, string clientOrderId = null, CancellationToken ct = default);
-    public Task<UnifiedResponse<bool>> CancelOrderAsync(string symbol, long? orderId = null, string clientOrderId = null, CancellationToken ct = default);
-    public Task<UnifiedResponse<bool>> CancelOpenOrdersAsync(string symbol, CancellationToken ct = default);
-    public Task<UnifiedResponse<Order>> GetOrderAsync(string symbol, long? orderId = null, string clientOrderId = null, CancellationToken ct = default);
-    public Task<UnifiedResponse<List<Order>>> GetOpenOrdersAsync(string symbol, CancellationToken ct = default);
-    public Task<UnifiedResponse<List<Order>>> GetOrderHistoryAsync(string symbol, DateTime? startTime = null, DateTime? endTime = null, int limit = 500, CancellationToken ct = default);
-    public Task<UnifiedResponse<List<Balance>>> GetBalancesAsync(CancellationToken ct = default);
-    
-    Task<int> SubscribeToOrderBookUpdatesAsync(string symbol, Action<OrderBook> onMessage, CancellationToken ct=default);
-    Task<int> SubscribeToOrderUpdatesAsync(Action<OrderUpdate> onOrderUpdate, CancellationToken ct = default);
-    */
-
-    public Task<RestCallResult<BinanceSpotOrder>> PlaceOrderAsync(
+    public Task<RestCallResult<CoinTRSpotOrderId>> PlaceOrderAsync(
         string symbol,
         CoinTRSpotOrderSide side,
         CoinTRSpotOrderType type,
@@ -44,80 +31,73 @@ public partial class CoinTRSpotRestClient
         parameters.AddOptionalString("triggerPrice", triggerPrice);
         parameters.AddOptional("tpslType", triggerOrder ? "tpsl" : "normal");
 
-        // parameters.AddOptionalString("requestTime", );
-        parameters.AddOptional("receiveWindow", _.ReceiveWindow(receiveWindow));
         parameters.AddOptionalEnum("stpMode", selfTradePreventionMode);
 
-        return RequestAsync<BinanceSpotOrder>(GetUrl(api, v2, "spot/trade/place-order"), HttpMethod.Get, ct, true, queryParameters: parameters);
+        parameters.AddOptionalString("receiveWindow", _.ReceiveWindow(receiveWindow));
+
+        return RequestAsync<CoinTRSpotOrderId>(GetUrl(api, v2, "spot/trade/place-order"), HttpMethod.Post, ct, true, bodyParameters: parameters);
     }
 
-    public Task<RestCallResult<BinanceSpotOrder>> GetOrderAsync(string symbol, long? orderId = null, string? origClientOrderId = null, int? receiveWindow = null, CancellationToken ct = default)
+    public Task<RestCallResult<CoinTRSpotOrderId>> CancelOrderAsync(string symbol, long? orderId = null, string? clientOrderId = null, bool triggerOrder = false, CancellationToken ct = default)
     {
-        symbol.ValidateBinanceSymbol();
-        if (orderId == null && origClientOrderId == null)
+        if (!orderId.HasValue && string.IsNullOrEmpty(clientOrderId))
             throw new ArgumentException("Either orderId or origClientOrderId must be sent");
 
         var parameters = new ParameterCollection();
         parameters.AddParameter("symbol", symbol);
-        parameters.AddOptional("orderId", orderId);
-        parameters.AddOptional("origClientOrderId", origClientOrderId);
-        parameters.AddOptional("recvWindow", _.ReceiveWindow(receiveWindow));
+        parameters.AddOptionalString("orderId", orderId);
+        parameters.AddOptional("clientOid", clientOrderId);
+        parameters.AddOptional("tpslType", triggerOrder ? "tpsl" : "normal");
 
-        return RequestAsync<BinanceSpotOrder>(GetUrl(api, v2, "order"), HttpMethod.Get, ct, true, queryParameters: parameters);
+        return RequestAsync<CoinTRSpotOrderId>(GetUrl(api, v2, "spot/trade/cancel-order"), HttpMethod.Post, ct, true, bodyParameters: parameters);
     }
 
-    public Task<RestCallResult<BinanceSpotOrder>> CancelOrderAsync(string symbol, long? orderId = null, string? origClientOrderId = null, string? newClientOrderId = null, BinanceSpotOrderCancelRestriction? cancelRestriction = null, int? receiveWindow = null, CancellationToken ct = default)
+    public Task<RestCallResult<CoinTRSpotOrderSymbol>> CancelOrdersAsync(string symbol, CancellationToken ct = default)
     {
-        symbol.ValidateBinanceSymbol();
-        if (!orderId.HasValue && string.IsNullOrEmpty(origClientOrderId))
-            throw new ArgumentException("Either orderId or origClientOrderId must be sent");
-
-        var parameters = new ParameterCollection();
-        parameters.AddParameter("symbol", symbol);
-        parameters.AddOptional("orderId", orderId);
-        parameters.AddOptional("origClientOrderId", origClientOrderId);
-        parameters.AddOptional("newClientOrderId", newClientOrderId);
-        parameters.AddOptionalEnum("cancelRestrictions", cancelRestriction);
-        parameters.AddOptional("recvWindow", _.ReceiveWindow(receiveWindow));
-
-        return RequestAsync<BinanceSpotOrder>(GetUrl(api, v2, "order"), HttpMethod.Delete, ct, true, bodyParameters: parameters);
-    }
-
-    public Task<RestCallResult<List<BinanceSpotOrder>>> CancelOrdersAsync(string symbol, int? receiveWindow = null, CancellationToken ct = default)
-    {
-        symbol.ValidateBinanceSymbol();
-
         var parameters = new ParameterCollection
         {
             { "symbol", symbol }
         };
-        parameters.AddOptional("recvWindow", _.ReceiveWindow(receiveWindow));
 
-        return RequestAsync<List<BinanceSpotOrder>>(GetUrl(api, v2, "openOrders"), HttpMethod.Delete, ct, true, bodyParameters: parameters);
+        return RequestAsync<CoinTRSpotOrderSymbol>(GetUrl(api, v2, "spot/trade/cancel-symbol-order"), HttpMethod.Post, ct, true, bodyParameters: parameters);
+    }
+    
+    public Task<RestCallResult<CoinTRSpotOrder>> GetOrderAsync(string symbol, long? orderId = null, string? clientOrderId = null, int? receiveWindow = null, CancellationToken ct = default)
+    {
+        if (orderId == null && clientOrderId == null)
+            throw new ArgumentException("Either orderId or origClientOrderId must be sent");
+
+        var parameters = new ParameterCollection();
+        parameters.AddParameter("symbol", symbol);
+        parameters.AddOptionalString("orderId", orderId);
+        parameters.AddOptional("clientOid", clientOrderId);
+        parameters.AddOptionalString("receiveWindow", _.ReceiveWindow(receiveWindow));
+
+        return RequestAsync<CoinTRSpotOrder>(GetUrl(api, v2, "spot/trade/orderInfo"), HttpMethod.Get, ct, true, queryParameters: parameters);
     }
 
-    public Task<RestCallResult<List<BinanceSpotOrder>>> GetOpenOrdersAsync(string? symbol = null, int? receiveWindow = null, CancellationToken ct = default)
+    public Task<RestCallResult<List<CoinTRSpotOrder>>> GetOpenOrdersAsync(string? symbol = null, int? receiveWindow = null, CancellationToken ct = default)
     {
         var parameters = new ParameterCollection();
         parameters.AddOptional("symbol", symbol);
-        parameters.AddOptional("recvWindow", _.ReceiveWindow(receiveWindow));
+        parameters.AddOptionalString("receiveWindow", _.ReceiveWindow(receiveWindow));
 
-        return RequestAsync<List<BinanceSpotOrder>>(GetUrl(api, v2, "openOrders"), HttpMethod.Get, ct, true, queryParameters: parameters);
+        return RequestAsync<List<CoinTRSpotOrder>>(GetUrl(api, v2, "spot/trade/unfilled-orders"), HttpMethod.Get, ct, true, queryParameters: parameters);
     }
 
-    public Task<RestCallResult<List<BinanceSpotOrder>>> GetOrdersAsync(string symbol, long? orderId = null, DateTime? startTime = null, DateTime? endTime = null, int? limit = null, int? receiveWindow = null, CancellationToken ct = default)
+    public Task<RestCallResult<List<CoinTRSpotOrder>>> GetOrdersAsync(string symbol, long? orderId = null, DateTime? startTime = null, DateTime? endTime = null, int? limit = null, int? receiveWindow = null, CancellationToken ct = default)
     {
         limit?.ValidateIntBetween(nameof(limit), 1, 1000);
 
         var parameters = new ParameterCollection();
         parameters.AddParameter("symbol", symbol);
-        parameters.AddOptional("orderId", orderId);
-        parameters.AddOptional("startTime", startTime?.ConvertToMilliseconds());
-        parameters.AddOptional("endTime", endTime?.ConvertToMilliseconds());
-        parameters.AddOptional("limit", limit);
-        parameters.AddOptional("recvWindow", _.ReceiveWindow(receiveWindow));
+        parameters.AddOptionalString("orderId", orderId);
+        parameters.AddOptionalString("startTime", startTime?.ConvertToMilliseconds());
+        parameters.AddOptionalString("endTime", endTime?.ConvertToMilliseconds());
+        parameters.AddOptionalString("limit", limit);
+        parameters.AddOptionalString("receiveWindow", _.ReceiveWindow(receiveWindow));
 
-        return RequestAsync<List<BinanceSpotOrder>>(GetUrl(api, v2, "allOrders"), HttpMethod.Get, ct, true, queryParameters: parameters);
+        return RequestAsync<List<CoinTRSpotOrder>>(GetUrl(api, v2, "spot/trade/history-orders"), HttpMethod.Get, ct, true, queryParameters: parameters);
     }
 
 }

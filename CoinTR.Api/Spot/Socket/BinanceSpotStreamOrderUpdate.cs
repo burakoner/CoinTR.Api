@@ -92,7 +92,7 @@ public record BinanceSpotStreamOrderUpdate: BinanceSocketStreamEvent
     /// The status of the order
     /// </summary>
     [JsonProperty("X")]
-    public BinanceOrderStatus Status { get; set; }
+    public CoinTRSpotOrderStatus Status { get; set; }
 
     /// <summary>
     /// The reason the order was rejected

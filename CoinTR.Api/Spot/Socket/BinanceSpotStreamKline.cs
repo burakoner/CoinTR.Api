@@ -54,12 +54,6 @@ public record BinanceSpotStreamKline
     public string Symbol { get; set; } = "";
 
     /// <summary>
-    /// The interval of this candlestick
-    /// </summary>
-    [JsonProperty("i")]
-    public BinanceKlineInterval Interval { get; set; }
-
-    /// <summary>
     /// The first trade id in this candlestick
     /// </summary>
     [JsonProperty("f")]

@@ -8,7 +8,6 @@ internal partial class CoinTRSpotSocketClient
     public Task<CallResult<WebSocketUpdateSubscription>> SubscribeToAggregatedTradesAsync(IEnumerable<string> symbols, Action<WebSocketDataEvent<BinanceSpotStreamAggregatedTrade>> onMessage, CancellationToken ct = default)
     {
         symbols.ValidateNotNull(nameof(symbols));
-        foreach (var symbol in symbols) symbol.ValidateBinanceSymbol();
 
         var handler = new Action<WebSocketDataEvent<BinanceSocketCombinedStream<BinanceSpotStreamAggregatedTrade>>>(data =>
         {
@@ -25,7 +24,6 @@ internal partial class CoinTRSpotSocketClient
     public Task<CallResult<WebSocketUpdateSubscription>> SubscribeToTradesAsync(IEnumerable<string> symbols, Action<WebSocketDataEvent<BinanceSpotStreamTrade>> onMessage, CancellationToken ct = default)
     {
         symbols.ValidateNotNull(nameof(symbols));
-        foreach (var symbol in symbols) symbol.ValidateBinanceSymbol();
 
         var handler = new Action<WebSocketDataEvent<BinanceSocketCombinedStream<BinanceSpotStreamTrade>>>(data =>
         {
@@ -33,30 +31,6 @@ internal partial class CoinTRSpotSocketClient
         });
 
         var topics = symbols.Select(a => a.ToLower(CoinTRConstants.CI) + "@trade").ToArray();
-        return SubscribeAsync(topics, false, handler, ct);
-    }
-
-    public Task<CallResult<WebSocketUpdateSubscription>> SubscribeToKlinesAsync(string symbol, BinanceKlineInterval interval, Action<WebSocketDataEvent<BinanceSpotStreamKline>> onMessage, CancellationToken ct = default)
-        => SubscribeToKlinesAsync([symbol], interval, onMessage, ct);
-
-    public Task<CallResult<WebSocketUpdateSubscription>> SubscribeToKlinesAsync(string symbol, IEnumerable<BinanceKlineInterval> intervals, Action<WebSocketDataEvent<BinanceSpotStreamKline>> onMessage, CancellationToken ct = default)
-        => SubscribeToKlinesAsync([symbol], intervals, onMessage, ct);
-
-    public Task<CallResult<WebSocketUpdateSubscription>> SubscribeToKlinesAsync(IEnumerable<string> symbols, BinanceKlineInterval interval, Action<WebSocketDataEvent<BinanceSpotStreamKline>> onMessage, CancellationToken ct = default)
-        => SubscribeToKlinesAsync(symbols, [interval], onMessage, ct);
-
-    public Task<CallResult<WebSocketUpdateSubscription>> SubscribeToKlinesAsync(IEnumerable<string> symbols, IEnumerable<BinanceKlineInterval> intervals, Action<WebSocketDataEvent<BinanceSpotStreamKline>> onMessage, CancellationToken ct = default)
-    {
-        symbols.ValidateNotNull(nameof(symbols));
-        foreach (var symbol in symbols) symbol.ValidateBinanceSymbol();
-
-        var handler = new Action<WebSocketDataEvent<BinanceSocketCombinedStream<BinanceSpotStreamKlineWrapper>>>(data =>
-        {
-            onMessage(data.As(data.Data.Data.Kline, data.Data.Data.Symbol));
-        }
-        );
-
-        var topics = symbols.SelectMany(a => intervals.Select(i => a.ToLower(CoinTRConstants.CI) + "@kline" + "_" + MapConverter.GetString(i))).ToArray();
         return SubscribeAsync(topics, false, handler, ct);
     }
 
@@ -68,7 +42,6 @@ internal partial class CoinTRSpotSocketClient
     public Task<CallResult<WebSocketUpdateSubscription>> SubscribeToMiniTickersAsync(IEnumerable<string> symbols, Action<WebSocketDataEvent<BinanceSpotStreamMiniTick>> onMessage, CancellationToken ct = default)
     {
         symbols.ValidateNotNull(nameof(symbols));
-        foreach (var symbol in symbols) symbol.ValidateBinanceSymbol();
 
         var handler = new Action<WebSocketDataEvent<BinanceSocketCombinedStream<BinanceSpotStreamMiniTick>>>(data =>
         {
@@ -95,7 +68,6 @@ internal partial class CoinTRSpotSocketClient
     public Task<CallResult<WebSocketUpdateSubscription>> SubscribeToTickersAsync(IEnumerable<string> symbols, Action<WebSocketDataEvent<BinanceSpotStreamTick>> onMessage, CancellationToken ct = default)
     {
         symbols.ValidateNotNull(nameof(symbols));
-        foreach (var symbol in symbols) symbol.ValidateBinanceSymbol();
 
         var handler = new Action<WebSocketDataEvent<BinanceSocketCombinedStream<BinanceSpotStreamTick>>>(data =>
         {
@@ -144,7 +116,6 @@ internal partial class CoinTRSpotSocketClient
     public Task<CallResult<WebSocketUpdateSubscription>> SubscribeToBookTickersAsync(IEnumerable<string> symbols, Action<WebSocketDataEvent<BinanceSpotStreamBookPrice>> onMessage, CancellationToken ct = default)
     {
         symbols.ValidateNotNull(nameof(symbols));
-        foreach (var symbol in symbols) symbol.ValidateBinanceSymbol();
 
         var handler = new Action<WebSocketDataEvent<BinanceSocketCombinedStream<BinanceSpotStreamBookPrice>>>(data =>
         {
@@ -162,7 +133,6 @@ internal partial class CoinTRSpotSocketClient
     {
         symbols.ValidateNotNull(nameof(symbols));
         levels.ValidateIntValues(nameof(levels), 5, 10, 20);
-        foreach (var symbol in symbols) symbol.ValidateBinanceSymbol();
 
         updateInterval?.ValidateIntValues(nameof(updateInterval), 100, 1000);
 
@@ -182,7 +152,6 @@ internal partial class CoinTRSpotSocketClient
     {
         symbols.ValidateNotNull(nameof(symbols));
         updateInterval?.ValidateIntValues(nameof(updateInterval), 100, 1000);
-        foreach (var symbol in symbols) symbol.ValidateBinanceSymbol();
 
         var handler = new Action<WebSocketDataEvent<BinanceSocketCombinedStream<BinanceSpotStreamOrderBook>>>(data =>
         {

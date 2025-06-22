@@ -3,7 +3,7 @@
 /// <summary>
 /// CoinTR Response
 /// </summary>
-internal record CoinTRResponse<T>
+internal record CoinTRRestResponse<T>
 {
     /// <summary>
     /// Code
