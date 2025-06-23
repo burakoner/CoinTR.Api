@@ -5,7 +5,7 @@ namespace CoinTR.Api;
 /// <summary>
 /// CoinTR Rest API Client
 /// </summary>
-public sealed class CoinTRRestApiClient : RestApiClient
+public class CoinTRRestApiClient : RestApiClient
 {
     // Internal
     internal ILogger Logger => this._logger;

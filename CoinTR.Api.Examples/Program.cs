@@ -18,8 +18,8 @@ internal class Program
         Console.ReadKey(true);
         Console.WriteLine("Starting...");
 
-        await RestApiExamplesAsync();
         await WebSocketApiExamplesAsync();
+        await RestApiExamplesAsync();
     }
 
     static async Task RestApiExamplesAsync()
@@ -51,13 +51,15 @@ internal class Program
     {
         // WebSocket API Client
         var ws = new CoinTRSocketApiClient();
-        ws.SetApiCredentials("XXXXXXXX-API-KEY-XXXXXXXX", "XXXXXXXX-API-SECRET-XXXXXXXX", "XXXXXXXX-API-PASSPHRASE-XXXXXXXX");
+        // ws.SetApiCredentials("XXXXXXXX-API-KEY-XXXXXXXX", "XXXXXXXX-API-SECRET-XXXXXXXX", "XXXXXXXX-API-PASSPHRASE-XXXXXXXX");
+        ws.SetApiCredentials("cointr_e125aa46f672f97dcc76e3c07c4a698e", "9e3ebc3a850fb13d6437bb78add71360f46d31227dd4d595a8d72b14000ed0a4", "bo1144167AZ");
 
         var sub01 = await ws.Spot.SubscribeToBalancesAsync((data) =>
         {
             Console.WriteLine(JsonConvert.SerializeObject(data.Data));
         });
 
+        Console.WriteLine("Ready!.. "+sub01.Success);
         Console.ReadKey(true);
         var sub02 = await ws.Spot.SubscribeToTickersAsync(["ETHUSDT", "XRPUSDT"], (data) =>
         {
