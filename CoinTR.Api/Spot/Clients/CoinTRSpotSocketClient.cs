@@ -84,9 +84,6 @@ internal partial class CoinTRSpotSocketClient : WebSocketApiClient, ICoinTRSpotS
         if (message.Type != JTokenType.Object)
             return false;
 
-        var action = message["action"];
-        if (action == null) return false;
-
         if (message["arg"] == null) return false;
         if (message["arg"]!.Type != JTokenType.Object) return false;
         var arg = Deserialize<CoinTRSocketArgument>(message["arg"]!);
