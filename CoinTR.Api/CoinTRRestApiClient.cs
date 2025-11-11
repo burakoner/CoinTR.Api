@@ -59,7 +59,8 @@ public class CoinTRRestApiClient : RestApiClient
     /// </summary>
     /// <param name="apikey">API Key</param>
     /// <param name="secret">API Secret</param>
-    public void SetApiCredentials(string apikey, string secret) => SetApiCredentials(new ApiCredentials(apikey, secret));
+    /// <param name="phrase">API Phrase</param>
+    public void SetApiCredentials(string apikey, string secret, string phrase) => SetApiCredentials(new CoinTRApiCredentials(apikey, secret, phrase));
     #endregion
 
     #region Overrided Methods
