@@ -6,7 +6,7 @@
 public record CoinTRSpotOrder
 {
     [JsonProperty("userId")]
-    public string UserId { get; set; } = "";
+    public long UserId { get; set; }
 
     [JsonProperty("symbol")]
     public string Symbol { get; set; }
@@ -47,11 +47,17 @@ public record CoinTRSpotOrder
     [JsonProperty("enterPointSource")]
     public string EnterPointSource { get; set; } = "";
 
-    [JsonProperty("cTime")]
-    public DateTime CreateTime { get; set; }
+    [JsonProperty("feeDetail")]
+    public string FeeDetail { get; set; } = "";
 
-    [JsonProperty("uTime")]
-    public DateTime? UpdateTime { get; set; }
+    [JsonProperty("orderSource")]
+    public string OrderSource { get; set; } = "";
+
+    [JsonProperty("tpslType")]
+    public string TpSlType { get; set; } = "";
+
+    [JsonProperty("triggerPrice")]
+    public decimal? TriggerPrice { get; set; }
 
     [JsonProperty("baseCoin")]
     public string BaseAsset { get; set; } = "";
@@ -59,15 +65,9 @@ public record CoinTRSpotOrder
     [JsonProperty("quoteCoin")]
     public string QuoteAsset { get; set; } = "";
 
-    [JsonProperty("orderSource")]
-    public string OrderSource { get; set; } = "";
+    [JsonProperty("cTime")]
+    public DateTime CreateTime { get; set; }
 
-    [JsonProperty("feeDetail")]
-    public string FeeDetail { get; set; } = "";
-
-    [JsonProperty("tpslType")]
-    public string TpSlType { get; set; } = "";
-
-    [JsonProperty("triggerPrice")]
-    public decimal? TriggerPrice { get; set; }
+    [JsonProperty("uTime")]
+    public DateTime? UpdateTime { get; set; }
 }

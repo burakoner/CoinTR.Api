@@ -25,7 +25,7 @@ public interface ICoinTRSpotRestClientTrade
 
     Task<RestCallResult<CoinTRSpotOrderSymbol>> CancelOrdersAsync(string symbol, CancellationToken ct = default);
 
-    Task<RestCallResult<CoinTRSpotOrder>> GetOrderAsync(string symbol, long? orderId = null, string? clientOrderId = null, int? receiveWindow = null, CancellationToken ct = default);
+    Task<RestCallResult<List<CoinTRSpotOrder>>> GetOrderAsync(string symbol, long? orderId = null, string? clientOrderId = null, int? receiveWindow = null, CancellationToken ct = default);
 
     Task<RestCallResult<List<CoinTRSpotOrder>>> GetOpenOrdersAsync(string? symbol = null, int? receiveWindow = null, CancellationToken ct = default);
 

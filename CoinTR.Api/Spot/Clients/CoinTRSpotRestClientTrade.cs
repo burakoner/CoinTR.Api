@@ -62,7 +62,7 @@ internal partial class CoinTRSpotRestClient
         return RequestAsync<CoinTRSpotOrderSymbol>(GetUrl(api, v2, "spot/trade/cancel-symbol-order"), HttpMethod.Post, ct, true, bodyParameters: parameters);
     }
     
-    public Task<RestCallResult<CoinTRSpotOrder>> GetOrderAsync(string symbol, long? orderId = null, string? clientOrderId = null, int? receiveWindow = null, CancellationToken ct = default)
+    public Task<RestCallResult<List<CoinTRSpotOrder>>> GetOrderAsync(string symbol, long? orderId = null, string? clientOrderId = null, int? receiveWindow = null, CancellationToken ct = default)
     {
         if (orderId == null && clientOrderId == null)
             throw new ArgumentException("Either orderId or origClientOrderId must be sent");
@@ -73,7 +73,7 @@ internal partial class CoinTRSpotRestClient
         parameters.AddOptional("clientOid", clientOrderId);
         parameters.AddOptionalString("receiveWindow", _.ReceiveWindow(receiveWindow));
 
-        return RequestAsync<CoinTRSpotOrder>(GetUrl(api, v2, "spot/trade/orderInfo"), HttpMethod.Get, ct, true, queryParameters: parameters);
+        return RequestAsync<List<CoinTRSpotOrder>>(GetUrl(api, v2, "spot/trade/orderInfo"), HttpMethod.Get, ct, true, queryParameters: parameters);
     }
 
     public Task<RestCallResult<List<CoinTRSpotOrder>>> GetOpenOrdersAsync(string? symbol = null, int? receiveWindow = null, CancellationToken ct = default)

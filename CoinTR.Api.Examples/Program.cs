@@ -29,7 +29,7 @@ internal class Program
         {
             RawResponse = true,
         });
-        api.SetApiCredentials("XXXXXXXX-API-KEY-XXXXXXXX", "XXXXXXXX-API-SECRET-XXXXXXXX");
+        api.SetApiCredentials("XXXXXXXX-API-KEY-XXXXXXXX", "XXXXXXXX-API-SECRET-XXXXXXXX", "XXXXXXXX-API-PHRASE-XXXXXXXX");
 
         var spot_001 = await api.Spot.GetTimeAsync();
         var spot_002 = await api.Spot.GetAssetsAsync();
@@ -42,6 +42,11 @@ internal class Program
         var spot_009 = await api.Spot.GetOrderBookAsync("BTCUSDT", limit: 20);
 
         var spot_010 = await api.Spot.PlaceOrderAsync("BTCUSDT", CoinTRSpotOrderSide.Buy, CoinTRSpotOrderType.Limit, CoinTRSpotTimeInForce.GoodTillCanceled, 100.01m, 110000.09m);
+        var spot_014 = await api.Spot.GetOpenOrdersAsync("ETHTRY");
+        var spot_015 = await api.Spot.GetOrderAsync("ETHTRY", 1372061845451681792);
+        var spot_016 = await api.Spot.CancelOrderAsync("ETHTRY", 1372061845451681792);
+        var spot_017 = await api.Spot.CancelOrdersAsync("ETHTRY");
+        var spot_018 = await api.Spot.GetOpenOrdersAsync("ETHTRY");
 
         Console.WriteLine("Done!..");
         Console.ReadLine();
